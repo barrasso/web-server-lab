@@ -1,6 +1,7 @@
 # import required libraries
 from socket import *
 import time
+import os.path
 
 # define server variables
 host = '' # default localhost
@@ -24,16 +25,38 @@ while True:
 	print 'Ready to serve...'
 	# accept incoming connection
 	connectionSocket, addr = serverSocket.accept()
-	 
-	try:
-		# get message request
-		message = connectionSocket.recv(size)
 
-		# check for valid message length
-		if len(message) > 1:
+	try:
+		# get request and filename
+		request = connectionSocket.recv(size)
+
+		# check for valid request length
+		if len(request) > 1:
+
+			# check the last time the requested file was modified
+			filename = request.split()[1]
+			lastModifiedTime = time.ctime(os.path.getmtime(filename[1:]))
+
+			# check for 'If-Modified-Since' header
+			if not "If-Modified-Since" in request:
+				print('Did not find If-Modified-Since header in client request.')
+			else:
+				# get request time from request header
+				requestTime = request.split("If-Modified-Since: ",1)[1]
+
+				# trim excess whitespace/null characters
+				requestTime = "".join(requestTime.split()) 
+				lastModifiedTime = "".join(lastModifiedTime.split()) 
+
+				# compare last modified time to request time 
+				print 'Comparing request time: {0} to last modified time: {1}'.format(requestTime, lastModifiedTime)
+
+				if requestTime > lastModifiedTime:
+					print('requestTime is greater than the lastModifiedTime time.')
+				else: 
+					print('requestTime is less than the lastModifiedTime time.')
 
 			# open requested file
-			filename = message.split()[1]
 			f = open(filename[1:])
 
 			# read file
@@ -45,9 +68,9 @@ while True:
 			# send HTTP status to client
 			connectionSocket.send('HTTP/1.1 200 OK\r\n')
 			
-			# send Last-Modified HTTP header line to client with current time
-			currentTime = time.strftime('%a, %d %b %Y %H:%M:%S %Z(%z)')
-			connectionSocket.send('Last-Modified: {0}\r\n'.format(currentTime))
+			# send Last-Modified HTTP header line to client
+			lastModifiedTime = time.strftime('%a %b %d %H:%M:%S %Y')
+			connectionSocket.send('Last-Modified: {0}\r\n'.format(lastModifiedTime))
 
 			# send content type to client
 			connectionSocket.send("Content-Type: text/html\r\n\r\n")
@@ -62,7 +85,7 @@ while True:
 
 	except IOError:
 
-		# send response message for file not found
+		# send response request for file not found
 		connectionSocket.send('HTTP/1.1 404 Not Found\r\n')
 		connectionSocket.send("Content-Type: text/html\r\n\r\n")
 		connectionSocket.send('<html><body><h1>Error</h1><h2>404 Not Found</h2></body></html>')
