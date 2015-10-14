@@ -50,7 +50,7 @@ print data3
 
 # check for 550 server response
 if data3[:3] != '550':
-	print '550 reply not received from server.'
+	print '550 - The email address you tried to contact does not exist.'
 	sys.exit(1)
 
 # send DATA command
