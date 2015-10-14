@@ -1,49 +1,72 @@
+# required libraries
 from socket import *
 import sys
-# Message to be sent
-msg = '\r\n I love sending e-mails!'
-endmsg = '\r\n.\r\n'
-# Choose a BU mail server and call it mailserver
-mailserver = #Fill in start #Fill in end
-# Create socket called clientSocket and establish a TCP connection with mailserver
-#Fill in start
-#Fill in end
-recv = clientSocket.recv(1024)
-print recv
 
-if recv[:3] != '220':
+# message to be sent
+msg = '\r\nThe arc of the moral universe is long, but it bends towards justice'
+endmsg = '\r\n.\r\n'
+
+# define BU mail server
+mailserver = ("smtp.bu.edu", 587)
+
+# Create socket called clientSocket and establish a TCP connection with mailserver
+clientSocket = socket(AF_INET, SOCK_STREAM)
+clientSocket.connect(mailserver)
+
+# get initial data buffer
+data = clientSocket.recv(1024)
+print data
+
+# check for 220 server response
+if data[:3] != '220':
 	print '220 reply not received from server.'
  	sys.exit(1)
 
-
-# Send HELO command and print server response.
-heloCommand = 'HELO #Fill in start #Fill in end \r\n'
+# send HELO command
+heloCommand = 'HELO Mark\r\n'
 clientSocket.send(heloCommand)
-recv1 = clientSocket.recv(1024)
-print recv1
+# receive and print the server's response
+data1 = clientSocket.recv(1024)
+print data1
 
-if recv1[:3] != '250':
+# check for 250 server response
+if data1[:3] != '250':
 	print '250 reply not received from server.'
 	sys.exit(1)
 
-# Send MAIL FROM command and print server response.
-#Fill in start
-#Fill in end
-# Send RCPT TO command and print server response.
-#Fill in start
-#Fill in end
-# Send DATA command and print server response.
-#Fill in start
-#Fill in end
-# Send message data.
-#Fill in start
-#Fill in end
-# Message ends with a single period.
-#Fill in start
-#Fill in end
-# Send QUIT command and get server response.
-#Fill in start
-#Fill in end
-# Close client socket
-#Fill in start
-#Fill in end
+# send FROM command
+fromCommand = 'MAIL From: barrasso@bu.edu\r\n'
+clientSocket.send(fromCommand)
+# receive and print the server's response
+data2 = clientSocket.recv(1024)
+print data2
+
+# send RCPT command
+rcptCommand = 'RCPT To: barrasso@bu.edu\r\n'
+clientSocket.send(rcptCommand)
+# receive and print the server's response
+data3 = clientSocket.recv(1024)
+print data3
+
+# send DATA command
+dataCommand = 'DATA\r\n'
+clientSocket.send(dataCommand)
+# receive and print the server's response
+data4 = clientSocket.recv(1024)
+print data4
+
+# send message data
+clientSocket.send(msg)
+
+# message ends with a single period
+clientSocket.send(endmsg)
+
+# send QUIT command
+quitCommand = 'QUIT\r\n'
+clientSocket.send(quitCommand)
+# receive and print the server's response
+data5 = clientSocket.recv(1024)
+print data5
+
+# close socket
+clientSocket.close()
