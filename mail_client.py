@@ -42,11 +42,16 @@ data2 = clientSocket.recv(1024)
 print data2
 
 # send RCPT command
-rcptCommand = 'RCPT To: barrasso@bu.edu\r\n'
+rcptCommand = 'RCPT To: iprobabyldontexist@bu.edu\r\n'
 clientSocket.send(rcptCommand)
 # receive and print the server's response
 data3 = clientSocket.recv(1024)
 print data3
+
+# check for 550 server response
+if data3[:3] != '550':
+	print '550 reply not received from server.'
+	sys.exit(1)
 
 # send DATA command
 dataCommand = 'DATA\r\n'
